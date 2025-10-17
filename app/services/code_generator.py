@@ -80,7 +80,7 @@ Include these sections:
 6. ## License (MIT)
 
 Make it concise, professional, and well-formatted in Markdown.
-Return ONLY the README content, no extra text.
+Return ONLY the README content, no extra text not need of code block for raw Markdown.
 """
 
         response = await self.llm.ainvoke(prompt)
