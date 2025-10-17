@@ -38,26 +38,28 @@ async def process_task(request: TaskRequest):
     Background task processor
     """
     try:
-        print(f"🚀 Processing task: {request.task} (Round {request.round})")
+        print(f"🚀 Processing task: {request.task} (Round {request.round})", flush=True)
 
         # Initialize services
         github_service = GitHubService(settings.github_token)
         code_generator = CodeGenerator()
 
         # Step 1: Generate application code
-        print("📝 Generating application code...")
+        print("📝 Generating application code...", flush=True)
         index_html = await code_generator.generate_application(
             brief=request.brief, checks=request.checks, attachments=request.attachments
         )
+        print("✅ Code generation complete!", flush=True)
 
         # Step 2: Generate README
-        print("📄 Generating README...")
+        print("📄 Generating README...", flush=True)
         readme_md = await code_generator.generate_readme(
             task_id=request.task, brief=request.brief
         )
+        print("✅ README generation complete!", flush=True)
 
         # Step 3: Execute Git workflow
-        print("🔧 Executing Git workflow...")
+        print("🔧 Executing Git workflow...", flush=True)
         git_result = github_service.git_workflow(
             task_id=request.task,
             brief=request.brief,
@@ -66,7 +68,7 @@ async def process_task(request: TaskRequest):
         )
 
         # Step 4: Submit to evaluation URL
-        print("📤 Submitting to evaluation URL...")
+        print("📤 Submitting to evaluation URL...", flush=True)
         await submit_to_evaluation(
             evaluation_url=request.evaluation_url,
             email=request.email,
@@ -78,10 +80,10 @@ async def process_task(request: TaskRequest):
             pages_url=git_result["pages_url"],
         )
 
-        print(f"✅ Task {request.task} completed successfully!")
+        print(f"✅ Task {request.task} completed successfully!", flush=True)
 
     except Exception as e:
-        print(f"❌ Error processing task {request.task}: {e}")
+        print(f"❌ Error processing task {request.task}: {e}", flush=True)
         import traceback
 
         traceback.print_exc()
@@ -122,18 +124,22 @@ async def submit_to_evaluation(
                 )
 
                 if response.status_code == 200:
-                    print(f"✅ Successfully submitted to evaluation URL")
+                    print(f"✅ Successfully submitted to evaluation URL", flush=True)
                     return
                 else:
                     print(
-                        f"⚠️ Evaluation URL returned {response.status_code}: {response.text}"
+                        f"⚠️ Evaluation URL returned {response.status_code}: {response.text[:200]}",
+                        flush=True,
                     )
 
             except Exception as e:
-                print(f"⚠️ Attempt {attempt + 1} failed: {e}")
+                print(f"⚠️ Attempt {attempt + 1} failed: {e}", flush=True)
 
             # Exponential backoff: 1s, 2s, 4s, 8s, 16s
             if attempt < max_retries - 1:
                 await asyncio.sleep(2**attempt)
 
-    raise Exception("Failed to submit to evaluation URL after all retries")
+    # Don't raise exception, just log warning
+    print(
+        f"⚠️ Could not submit to evaluation URL after {max_retries} attempts", flush=True
+    )
