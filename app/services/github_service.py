@@ -75,7 +75,7 @@ class GitHubService:
         PyGithub doesn't have a built-in method for this.
         Returns: Pages URL
         """
-        pages_url = f"https://{self.user.login}.github.io/{repo.name}/"
+        pages_url = f"https://{self.user.login}.github.io/{repo.name}"
 
         try:
             # Use PyGithub's internal requester to make direct API call
