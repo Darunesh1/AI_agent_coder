@@ -3,10 +3,7 @@ services:
     build: .
     command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     container_name: ai_coder_web
-    ports:
-      - "8000:8000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: "host"  # This lets container access localhost services
     develop:
       watch:
         - action: sync
@@ -29,9 +26,3 @@ services:
       - .env
     volumes:
       - ./temp:/app/temp
-    networks:
-      - ai-coder-network
-
-networks:
-  ai-coder-network:
-    driver: bridge
